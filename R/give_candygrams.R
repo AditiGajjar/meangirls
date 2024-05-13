@@ -61,3 +61,40 @@ add_commentary <- function(person, number) {
   return("")
 
 }
+
+#' Announces the number of candygrams for people.
+#'
+#' @param people A vector of candygram recipients
+#' @param numbers A vector of how many grams they got
+#' @param extra_messages An optional vector giving extra commentary.
+#'
+#' @return A vector of candy gram announcements
+#'
+#' @importFrom stringr str_detect str_to_title
+#' @importFrom english as.english
+#' @importFrom purrr map_chr
+#'
+#' @export
+give_many_candygrams <- function(people, numbers, extra_messages = rep(NA, length(people))) {
+  stopifnot(all(numbers > 0))
+
+  if (any(is.na(extra_messages))) {
+    extra_messages[is.na(extra_messages)] <- mapply(add_commentary, people[is.na(extra_messages)], numbers[is.na(extra_messages)])
+  }
+
+
+  announcements <- mapply(function(person, number, extra_message) {
+    if (stringr::str_detect(person, "Gretchen")) {
+      return("None for Gretchen Weiners.")
+    } else {
+      number_word <- stringr::str_to_title(english::as.english(number))
+      if (extra_message != "") {
+        return(glue::glue("{number_word} for {person}. {extra_message}"))
+      } else {
+        return(glue::glue("{number_word} for {person}."))
+      }
+    }
+  }, people, numbers, extra_messages, SIMPLIFY = FALSE, USE.NAMES = FALSE)
+
+  return(unlist(announcements))
+}
